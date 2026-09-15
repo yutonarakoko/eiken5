@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>英検5級 英和辞典</title>
+<style>
+  :root{
+    --paper:#F1F3EE; --card:#FFFFFF; --ink:#1B2420; --ink-soft:#5D6A62;
+    --line:#DDE2DA; --accent:#24614A; --accent-bg:#DDE8E1; --mark:#C8892B;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--paper); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+    font-size:16px; line-height:1.7;
+    padding-bottom:calc(28px + env(safe-area-inset-bottom));
+  }
+  .wrap{max-width:560px;margin:0 auto;padding:0 16px}
+  header{
+    position:sticky;top:0;z-index:20;background:var(--paper);
+    padding-top:calc(14px + env(safe-area-inset-top));
+    border-bottom:1px solid var(--line);
+  }
+  h1{margin:0 0 2px;font-size:15px;font-weight:600;letter-spacing:.04em;color:var(--ink-soft)}
+  .count{margin:0 0 10px;font-size:12px;color:var(--ink-soft)}
+  .searchbox{position:relative}
+  #q{
+    width:100%;
+    font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    font-size:22px;padding:12px 42px 12px 14px;
+    border:1.5px solid var(--ink);border-radius:2px;
+    background:var(--card);color:var(--ink);
+  }
+  #q:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-bg)}
+  #clear{
+    position:absolute;right:6px;top:50%;transform:translateY(-50%);
+    border:0;background:none;color:var(--ink-soft);font-size:20px;
+    width:34px;height:34px;cursor:pointer;display:none;
+  }
+  nav{display:flex;gap:20px;margin:10px 0 0}
+  nav button{
+    border:0;background:none;padding:8px 0 10px;cursor:pointer;
+    font-size:14px;font-weight:600;color:var(--ink-soft);
+    border-bottom:2px solid transparent;font-family:inherit;
+  }
+  nav button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
+  .entry{
+    background:var(--card);border:1px solid var(--line);
+    border-left:4px solid var(--accent);border-radius:3px;
+    padding:14px 16px;margin:14px 0;
+  }
+  .head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .word{
+    font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    font-size:28px;font-weight:600;line-height:1.2;letter-spacing:-.01em;
+  }
+  .pos{font-size:12px;color:var(--ink-soft)}
+  .mean{font-size:19px;font-weight:600;margin:8px 0 0}
+  .ex{margin:12px 0 0;padding:10px 12px;background:var(--paper);border-radius:2px;font-size:15px}
+  .ex .en{font-family:"Iowan Old Style",Palatino,Georgia,serif;font-size:16px}
+  .ex .ja{color:var(--ink-soft);font-size:14px;margin-top:2px}
+  .acts{display:flex;gap:8px;margin-top:12px}
+  .acts button{
+    font-family:inherit;font-size:13px;font-weight:600;
+    padding:7px 12px;border:1px solid var(--line);border-radius:2px;
+    background:var(--card);color:var(--ink);cursor:pointer;
+  }
+  .acts button.on{background:var(--mark);border-color:var(--mark);color:#fff}
+  .acts button:active{transform:scale(.97)}
+  ul.hits{list-style:none;margin:8px 0 0;padding:0}
+  ul.hits li{border-bottom:1px solid var(--line)}
+  ul.hits button{
+    width:100%;text-align:left;background:none;border:0;cursor:pointer;
+    padding:11px 2px;display:flex;align-items:baseline;gap:10px;font-family:inherit;
+  }
+  ul.hits .w{font-family:"Iowan Old Style",Palatino,Georgia,serif;font-size:18px;color:var(--ink)}
+  ul.hits .m{font-size:13px;color:var(--ink-soft);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+  .log{margin:10px 0 0;font-size:13px;color:var(--ink-soft);line-height:1.9}
+  .log b{font-weight:600;color:var(--ink)}
+  .log .d{display:inline-block;padding:1px 7px;margin:0 3px 3px 0;border-radius:2px;
+          background:var(--accent-bg);color:var(--accent);font-weight:600}
+  .log.warm .d{background:#F6E7C8;color:var(--g4,#9A6410)}
+  .log.hot .d{background:#F3D3D0;color:#9C2E24}
+  .log.hot b{color:#9C2E24}
+  .cnt{margin-left:auto;font-size:11px;font-weight:700;color:var(--ink-soft)}
+  .cnt.hot{color:#9C2E24}
+  .note{color:var(--ink-soft);font-size:14px;margin:18px 0}
+  .askbtn{
+    display:block;width:100%;margin:10px 0;
+    font-family:inherit;font-size:15px;font-weight:600;padding:13px;
+    border:1.5px solid var(--accent);border-radius:2px;
+    background:var(--card);color:var(--accent);cursor:pointer;
+  }
+  .askbtn:disabled{opacity:.5}
+  .secttl{font-size:13px;font-weight:600;color:var(--ink-soft);margin:22px 0 4px}
+  .dots::after{content:"";animation:d 1.2s steps(4,end) infinite}
+  @keyframes d{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+  @media (prefers-reduced-motion:reduce){.dots::after{content:"...";animation:none}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>英検5級 英和辞典</h1>
+    <p class="count" id="count"></p>
+    <div class="searchbox">
+      <input id="q" type="search" autocapitalize="off" autocorrect="off" spellcheck="false"
+             placeholder="英語 または 日本語で検索" enterkeyhint="search">
+      <button id="clear" aria-label="消す">×</button>
+    </div>
+    <nav>
+      <button id="tab-search" aria-selected="true">検索</button>
+      <button id="tab-mark" aria-selected="false">ブックマーク</button>
+      <button id="tab-log" aria-selected="false">よく引く語</button>
+      <button id="tab-all" aria-selected="false">単語一覧</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap" id="main"></main>
+
+<script>
+/* 英検5級 単語データ  word|品詞|意味|例文|訳 */
+const RAW = `
+about|前|～について|Tell me about your trip.|旅行について教えてください。
+across|前|～を横切って|Walk across the street.|通りを渡りなさい。
+afternoon|名|午後|We play soccer in the afternoon.|午後にサッカーをします。
+again|副|再び|Please say that again.|もう一度言ってください。|ふたたび
+age|名|年齢|What is your age?|あなたの年齢は何歳ですか。
+ago|副|～前に|I saw him two days ago.|2日前に彼に会いました。|まえ
+air|名|空気|Open the window for fresh air.|新鮮な空気を入れるために窓を開けて。
+airport|名|空港|The airport is far from here.|空港はここから遠いです。
+all|形|すべての|All the students are here.|生徒全員がここにいます。
+also|副|～もまた|I also like cats.|私も猫が好きです。
+always|副|いつも|She always smiles.|彼女はいつも笑っています。
+angry|形|怒って|He is angry with me.|彼は私に怒っています。|おこって
+animal|名|動物|I like animals very much.|私は動物がとても好きです。
+answer|動|答える|Answer this question.|この質問に答えなさい。|こたえる
+any|形|いくつかの、どんな|Do you have any questions?|何か質問はありますか。
+apple|名|りんご|I eat an apple every day.|私は毎日りんごを食べます。
+April|名|4月|My birthday is in April.|私の誕生日は4月です。
+arm|名|腕|I broke my arm.|私は腕を骨折しました。
+around|前|～のまわりに|We walked around the park.|私たちは公園の周りを歩きました。
+art|名|美術|Art is my favorite subject.|美術は私の好きな科目です。
+ask|動|たずねる|May I ask you a question?|質問してもいいですか。
+at|前|～で、～に|I get up at six.|私は6時に起きます。
+August|名|8月|We have summer vacation in August.|8月は夏休みです。
+aunt|名|おば|My aunt lives in Tokyo.|私のおばは東京に住んでいます。
+autumn|名|秋|I like autumn the best.|私は秋がいちばん好きです。
+baby|名|赤ちゃん|The baby is sleeping.|赤ちゃんは眠っています。
+back|名|背中、後ろ|Please stand back.|後ろに下がってください。
+bad|形|悪い|That is a bad idea.|それは悪い考えです。|わるい
+bag|名|かばん|My bag is heavy.|私のかばんは重いです。
+ball|名|ボール|Throw me the ball.|ボールを投げて。
+banana|名|バナナ|I eat a banana every morning.|私は毎朝バナナを食べます。
+baseball|名|野球|Baseball is popular in Japan.|野球は日本で人気があります。
+basketball|名|バスケットボール|He plays basketball well.|彼はバスケットボールが上手です。
+bath|名|風呂|I take a bath every night.|私は毎晩お風呂に入ります。
+beautiful|形|美しい|What a beautiful view!|なんて美しい景色でしょう。|うつくしい
+because|接|なぜなら|I stayed home because it rained.|雨が降ったので家にいました。
+bed|名|ベッド|I go to bed at ten.|私は10時に寝ます。
+bedroom|名|寝室|My bedroom is upstairs.|私の寝室は2階です。
+before|前|～の前に|Wash your hands before dinner.|夕食の前に手を洗いなさい。
+begin|動|始める|The class begins at nine.|授業は9時に始まります。|はじめる
+behind|前|～の後ろに|The cat is behind the sofa.|猫はソファの後ろにいます。
+between|前|～の間に|Sit between us.|私たちの間に座って。
+bicycle|名|自転車|I ride my bicycle to school.|私は自転車で学校へ行きます。
+big|形|大きい|This is a big house.|これは大きな家です。|おおきい
+bird|名|鳥|The bird sings in the morning.|その鳥は朝に鳴きます。
+birthday|名|誕生日|My birthday is in May.|私の誕生日は5月です。
+black|形|黒い|That is a black car.|あれは黒い車です。|くろい
+blue|形|青い|The sky is blue today.|今日は空が青いです。|あおい
+boat|名|ボート|We rode a boat on the lake.|湖でボートに乗りました。
+body|名|体|Exercise is good for your body.|運動は体によいです。
+book|名|本|This book is very interesting.|この本はとてもおもしろいです。
+bookstore|名|書店|There is a bookstore near the station.|駅の近くに書店があります。
+box|名|箱|Put it in this box.|これを箱に入れてください。
+boy|名|男の子|That boy is my brother.|あの男の子は私の弟です。
+bread|名|パン|She eats bread for breakfast.|彼女は朝食にパンを食べます。
+breakfast|名|朝食|I have breakfast at seven.|私は7時に朝食を食べます。
+bridge|名|橋|We walked across the bridge.|私たちは橋を歩いて渡りました。
+bright|形|明るい|The room is bright.|その部屋は明るいです。|あかるい
+bring|動|持ってくる|Please bring your book.|本を持ってきてください。|もってくる
+brother|名|兄、弟|My brother likes soccer.|兄はサッカーが好きです。
+brown|形|茶色の|I have brown eyes.|私は茶色の目をしています。|ちゃいろ
+build|動|建てる|They built a new library.|彼らは新しい図書館を建てました。|たてる
+bus|名|バス|I take the bus to school.|私はバスで学校へ行きます。
+busy|形|忙しい|She is busy this week.|彼女は今週忙しいです。|いそがしい
+but|接|しかし|I like dogs, but I don't have one.|犬が好きですが、飼っていません。
+buy|動|買う|I buy milk at the shop.|私は店で牛乳を買います。|かう
+by|前|～によって、～のそばに|I go to school by bus.|私はバスで学校へ行きます。
+cake|名|ケーキ|My mother makes a cake.|母はケーキを作ります。
+call|動|呼ぶ、電話する|Call me tonight.|今夜電話してね。|よぶ でんわする
+camera|名|カメラ|I bought a new camera.|新しいカメラを買いました。
+camp|名|キャンプ|We went camping last summer.|去年の夏キャンプに行きました。
+can|助|～できる|I can swim well.|私は上手に泳げます。
+Canada|名|カナダ|She lives in Canada.|彼女はカナダに住んでいます。
+candy|名|キャンディー|Can I have some candy?|キャンディーをもらえますか。
+cap|名|帽子|He is wearing a red cap.|彼は赤い帽子をかぶっています。
+car|名|車|My father has a new car.|父は新しい車を持っています。
+card|名|カード|I sent a birthday card.|誕生日カードを送りました。
+carrot|名|にんじん|I don't like carrots.|私はにんじんが好きではありません。
+carry|動|運ぶ|He carried the heavy box.|彼は重い箱を運びました。|はこぶ
+cat|名|ねこ|My cat sleeps on the sofa.|うちのねこはソファで寝ます。
+catch|動|つかまえる|He catches a big fish.|彼は大きな魚をつかまえます。
+chair|名|いす|Sit on this chair.|このいすに座ってください。
+chicken|名|鶏肉、にわとり|We had chicken for dinner.|夕食に鶏肉を食べました。
+child|名|子ども|The child is playing outside.|その子どもは外で遊んでいます。
+China|名|中国|My friend is from China.|私の友達は中国出身です。
+chocolate|名|チョコレート|I like chocolate cake.|私はチョコレートケーキが好きです。
+Christmas|名|クリスマス|We enjoy Christmas every year.|毎年クリスマスを楽しみます。
+church|名|教会|They go to church on Sunday.|彼らは日曜日に教会へ行きます。
+city|名|市、都市|Sapporo is a big city.|札幌は大きな都市です。
+class|名|クラス、授業|My class has thirty students.|私のクラスには30人の生徒がいます。
+classmate|名|クラスメート|He is my classmate.|彼は私のクラスメートです。
+classroom|名|教室|Our classroom is on the third floor.|私たちの教室は3階です。
+clean|形|きれいな、動 掃除する|Clean your room.|部屋を掃除しなさい。|そうじする
+climb|動|登る|We climbed the mountain.|私たちはその山に登りました。|のぼる
+clock|名|時計|Look at the clock on the wall.|壁の時計を見なさい。
+close|動|閉める|Please close the door.|ドアを閉めてください。|しめる
+cloudy|形|くもりの|It is cloudy today.|今日はくもりです。
+club|名|クラブ、部活|I belong to the tennis club.|私はテニス部に入っています。
+coat|名|コート|Wear your coat, it is cold.|コートを着なさい、寒いから。
+coffee|名|コーヒー|My father drinks coffee every morning.|父は毎朝コーヒーを飲みます。
+cold|形|寒い、冷たい|The water is cold.|その水は冷たいです。|さむい つめたい
+color|名|色|What color do you like?|何色が好きですか。
+come|動|来る|Please come to my house.|私の家に来てください。|くる
+computer|名|コンピューター|I use a computer at work.|仕事でコンピューターを使います。
+cook|動|料理する|My mother cooks well.|母は料理が上手です。|りょうりする
+cookie|名|クッキー|We made cookies together.|いっしょにクッキーを作りました。
+cool|形|涼しい|It is cool this morning.|今朝は涼しいです。|すずしい
+corner|名|角|Turn left at the corner.|その角を左に曲がってください。
+country|名|国|Japan is a beautiful country.|日本は美しい国です。
+cousin|名|いとこ|My cousin lives in Kyoto.|私のいとこは京都に住んでいます。
+cry|動|泣く|The baby is crying.|赤ちゃんが泣いています。|なく
+cup|名|カップ|I want a cup of tea.|紅茶を1杯ほしいです。
+cut|動|切る|Cut the paper here.|ここで紙を切ってください。|きる
+dad|名|パパ|Dad is cooking dinner.|パパが夕食を作っています。
+dance|動|踊る|They dance at the festival.|彼らはお祭りで踊ります。|おどる
+dark|形|暗い|It gets dark early in winter.|冬は早く暗くなります。|くらい
+date|名|日付|What is the date today?|今日は何日ですか。
+daughter|名|娘|Their daughter is a doctor.|彼らの娘は医者です。
+day|名|日|I walk every day.|私は毎日歩きます。
+December|名|12月|Christmas is in December.|クリスマスは12月です。
+delicious|形|おいしい|This soup is delicious.|このスープはおいしいです。
+desk|名|机|My desk is by the window.|私の机は窓のそばにあります。
+dictionary|名|辞書|Look it up in the dictionary.|辞書で調べなさい。
+different|形|違う|Our opinions are different.|私たちの意見は違います。|ちがう
+difficult|形|難しい|This question is difficult.|この問題は難しいです。|むずかしい
+dinner|名|夕食|We have dinner at seven.|私たちは7時に夕食をとります。
+dish|名|皿、料理|Wash the dishes, please.|お皿を洗ってください。
+do|動|する|What do you do on weekends?|週末は何をしますか。
+doctor|名|医者|My mother is a doctor.|私の母は医者です。
+dog|名|犬|The dog runs in the park.|その犬は公園を走ります。
+doll|名|人形|My sister has many dolls.|私の妹はたくさんの人形を持っています。
+dollar|名|ドル|This book is ten dollars.|この本は10ドルです。
+door|名|ドア|The door is closed.|ドアは閉まっています。
+down|副|下へ|Sit down, please.|座ってください。|した
+draw|動|（絵を）描く|I like to draw pictures.|私は絵を描くのが好きです。|えをかく
+dress|名|ドレス|She is wearing a nice dress.|彼女はすてきなドレスを着ています。
+drink|動|飲む|He drinks tea after dinner.|彼は夕食後にお茶を飲みます。|のむ
+drive|動|運転する|My father drives to work.|父は運転して仕事に行きます。|うんてんする
+early|副|早く|I get up early every day.|私は毎日早起きします。|はやく
+easy|形|簡単な|This test was easy.|このテストは簡単でした。|かんたん
+eat|動|食べる|We eat lunch at noon.|私たちは12時に昼食を食べます。|たべる
+egg|名|卵|I want two eggs.|卵を2個ほしいです。
+eight|名|8|I have eight pencils.|私は鉛筆を8本持っています。
+eighteen|名|18|She is eighteen years old.|彼女は18歳です。
+eighty|名|80|My grandfather is eighty.|私の祖父は80歳です。
+elephant|名|ぞう|The elephant is very big.|そのぞうはとても大きいです。
+eleven|名|11|There are eleven players.|選手は11人います。
+end|名|終わり|This is the end of the story.|これが物語の終わりです。
+English|名|英語|I study English every day.|私は毎日英語を勉強します。
+enjoy|動|楽しむ|I enjoyed the concert very much.|コンサートをとても楽しみました。|たのしむ
+evening|名|夕方、晩|I study in the evening.|私は晩に勉強します。
+every|形|毎～、すべての|I walk every morning.|私は毎朝歩きます。|まい すべて
+excited|形|わくわくして|I am excited about the trip.|私は旅行にわくわくしています。
+exciting|形|わくわくさせる|That was an exciting game.|それはわくわくする試合でした。
+eye|名|目|She has blue eyes.|彼女は青い目をしています。
+face|名|顔|Wash your face.|顔を洗いなさい。
+fall|名|秋、動 落ちる|Leaves fall in autumn.|秋には葉が落ちます。
+family|名|家族|My family has four people.|私の家族は4人です。
+famous|形|有名な|He is a famous singer.|彼は有名な歌手です。|ゆうめい
+far|副|遠くに|The station is far from here.|駅はここから遠いです。|とおく
+farm|名|農場|My uncle has a large farm.|私のおじは大きな農場を持っています。
+farmer|名|農家の人|He is a rice farmer.|彼は米農家です。
+fast|形|速い|He runs very fast.|彼はとても速く走ります。|はやい
+father|名|父|My father works in Tokyo.|父は東京で働いています。
+favorite|形|お気に入りの|This is my favorite song.|これは私のお気に入りの歌です。|おきにいり
+February|名|2月|We have a snow festival in February.|2月には雪まつりがあります。
+feel|動|感じる|I feel happy today.|今日はうれしい気持ちです。|かんじる
+festival|名|祭り|The festival starts at noon.|祭りは正午に始まります。
+find|動|見つける|I can't find my key.|かぎが見つかりません。|みつける
+fine|形|元気な、晴れた|I am fine, thank you.|元気です、ありがとう。|げんき はれた
+finger|名|指|She hurt her finger.|彼女は指をけがしました。
+finish|動|終える|I finished my homework.|宿題を終えました。|おえる
+fire|名|火|Don't play with fire.|火で遊んではいけません。
+first|形|最初の|This is my first trip to Japan.|これが私の初めての日本旅行です。|さいしょ
+fish|名|魚|He catches a big fish.|彼は大きな魚をつかまえます。
+five|名|5|I need five apples.|りんごが5個必要です。
+flower|名|花|These flowers are beautiful.|これらの花は美しいです。
+fly|動|飛ぶ|Birds fly in the sky.|鳥は空を飛びます。|とぶ
+food|名|食べ物|Japanese food is delicious.|日本食はおいしいです。
+foot|名|足|My foot hurts.|足が痛いです。
+for|前|～のために|This present is for you.|このプレゼントはあなたのためです。
+forest|名|森|We walked in the forest.|私たちは森を歩きました。
+fork|名|フォーク|Use a fork and knife.|フォークとナイフを使いなさい。
+four|名|4|I have four sisters.|私には姉妹が4人います。
+fourteen|名|14|He is fourteen years old.|彼は14歳です。
+France|名|フランス|She studied in France.|彼女はフランスで勉強しました。
+free|形|ひまな、自由な|Are you free tomorrow?|明日ひまですか。|じゆう
+French|名|フランス語、形 フランスの|She speaks French well.|彼女はフランス語を上手に話します。
+Friday|名|金曜日|We have a test on Friday.|金曜日にテストがあります。
+friend|名|友達|She is my best friend.|彼女は私の親友です。
+friendly|形|親しみやすい|My teacher is very friendly.|私の先生はとても親切です。|したしみやすい
+from|前|～から|I am from Sapporo.|私は札幌の出身です。
+front|名|前|Stand in front of the door.|ドアの前に立ちなさい。
+fruit|名|果物|I eat fruit every morning.|私は毎朝果物を食べます。
+fun|名|楽しみ|We had a lot of fun.|私たちはとても楽しみました。
+future|名|未来、将来|What do you want to do in the future?|将来何をしたいですか。
+game|名|試合、ゲーム|Let's play a video game.|テレビゲームをしましょう。
+garden|名|庭|We have a small garden.|うちには小さな庭があります。
+gate|名|門|Meet me at the gate.|門のところで会いましょう。
+gift|名|贈り物|Thank you for the gift.|贈り物をありがとう。
+girl|名|女の子|That girl is my sister.|あの女の子は私の妹です。
+give|動|与える|Please give me some water.|水をください。|あたえる
+glad|形|うれしい|I am glad to see you.|あなたに会えてうれしいです。
+glass|名|コップ、ガラス|Can I have a glass of water?|コップ一杯の水をもらえますか。
+glove|名|手袋、グローブ|Wear your gloves, it is cold.|手袋をつけなさい、寒いから。
+go|動|行く|I go to school by bus.|私はバスで学校へ行きます。|いく
+good|形|よい|That is a good idea.|それはよい考えです。
+grandfather|名|祖父|My grandfather is eighty.|私の祖父は80歳です。
+grandmother|名|祖母|My grandmother makes cookies.|私の祖母はクッキーを作ります。
+grape|名|ぶどう|These grapes are sweet.|このぶどうは甘いです。
+grass|名|草|Don't walk on the grass.|草の上を歩かないで。
+gray|形|灰色の|He has gray hair.|彼は白髪です。|はいいろ
+great|形|すばらしい|That is a great idea!|それはすばらしい考えです。
+green|形|緑の|Her eyes are green.|彼女の目は緑色です。|みどり
+guitar|名|ギター|He plays the guitar every day.|彼は毎日ギターを演奏します。
+gym|名|体育館|We play basketball in the gym.|体育館でバスケットボールをします。
+hair|名|髪|She has long hair.|彼女は長い髪をしています。
+hamburger|名|ハンバーガー|I want a hamburger for lunch.|昼食にハンバーガーが食べたいです。
+hand|名|手|Raise your hand.|手を挙げてください。
+happy|形|うれしい、幸せな|I am happy to see you.|あなたに会えてうれしいです。|うれしい しあわせ
+hard|形|難しい、副 一生懸命に|He studies hard every day.|彼は毎日一生懸命勉強します。|むずかしい いっしょうけんめい
+hat|名|帽子|She is wearing a nice hat.|彼女はすてきな帽子をかぶっています。
+have|動|持っている|Do you have a pen?|ペンを持っていますか。|もっている
+head|名|頭|My head hurts.|頭が痛いです。
+hear|動|聞こえる|I can hear music.|音楽が聞こえます。|きこえる きく
+heavy|形|重い|This bag is heavy.|このかばんは重いです。|おもい
+hello|間|こんにちは|Hello, nice to meet you.|こんにちは、はじめまして。
+help|動|手伝う|Can you help me?|手伝ってくれますか。|てつだう
+here|副|ここに|Come here, please.|こちらに来てください。
+high|形|高い|That mountain is very high.|あの山はとても高いです。|たかい
+history|名|歴史|I like history class.|私は歴史の授業が好きです。
+hobby|名|趣味|My hobby is reading.|私の趣味は読書です。
+holiday|名|休日|We have a holiday tomorrow.|明日は休日です。
+home|名|家|I stay home on Sundays.|私は日曜日は家にいます。
+homework|名|宿題|I have a lot of homework today.|今日は宿題がたくさんあります。
+hospital|名|病院|She works at a hospital.|彼女は病院で働いています。
+hot|形|暑い、熱い|It is hot today.|今日は暑いです。|あつい
+hour|名|時間|I study for one hour.|私は1時間勉強します。
+house|名|家|This is my house.|これは私の家です。
+how|副|どのように|How do you go to school?|どうやって学校へ行きますか。
+hundred|名|100|There are one hundred students.|生徒は100人います。
+hungry|形|空腹な|I am very hungry.|私はとても空腹です。|くうふく
+husband|名|夫|Her husband is a teacher.|彼女の夫は教師です。
+ice|名|氷|Put ice in the water.|水に氷を入れて。
+idea|名|考え|That is a great idea.|それはすばらしい考えです。
+if|接|もし～ならば|If it rains, I will stay home.|もし雨が降ったら、私は家にいます。
+important|形|重要な|This is an important meeting.|これは重要な会議です。|じゅうよう
+in|前|～の中に|The book is in the bag.|本はかばんの中にあります。
+interesting|形|おもしろい|The story was interesting.|その話はおもしろかったです。
+into|前|～の中へ|She went into the room.|彼女は部屋に入りました。
+Italy|名|イタリア|We traveled to Italy.|私たちはイタリアを旅行しました。
+jacket|名|上着|Wear a jacket, it is cold.|上着を着なさい、寒いから。
+January|名|1月|The new year starts in January.|新年は1月に始まります。
+Japan|名|日本|I live in Japan.|私は日本に住んでいます。
+Japanese|名|日本語、形 日本の|He speaks Japanese well.|彼は日本語を上手に話します。
+job|名|仕事|She found a new job.|彼女は新しい仕事を見つけました。
+juice|名|ジュース|I drink orange juice every morning.|私は毎朝オレンジジュースを飲みます。
+July|名|7月|Summer vacation starts in July.|夏休みは7月に始まります。
+jump|動|跳ぶ|The dog can jump high.|その犬は高く跳べます。|とぶ
+June|名|6月|It rains a lot in June.|6月はよく雨が降ります。
+just|副|ちょうど、ただ|It is just a small mistake.|それはただの小さな間違いです。
+keep|動|保つ|Keep the room clean.|部屋をきれいにしておきなさい。|たもつ
+key|名|かぎ|I lost my key.|かぎをなくしました。
+kind|形|親切な、名 種類|She is very kind.|彼女はとても親切です。|しんせつ しゅるい
+king|名|王|The king lived in this castle.|王はこの城に住んでいました。
+kitchen|名|台所|Mother is in the kitchen.|母は台所にいます。
+kite|名|たこ|We flew a kite in the park.|公園でたこを揚げました。
+knife|名|ナイフ|Be careful with the knife.|ナイフに気をつけて。
+know|動|知っている|I know his name.|私は彼の名前を知っています。|しっている
+Korea|名|韓国|My friend is from Korea.|私の友達は韓国出身です。
+lake|名|湖|We swam in the lake.|私たちは湖で泳ぎました。
+language|名|言語|How many languages do you speak?|いくつの言語を話しますか。
+large|形|大きい|They live in a large house.|彼らは大きな家に住んでいます。|おおきい
+last|形|この前の、最後の|I saw her last week.|先週彼女に会いました。|このまえ さいご
+late|形|遅れた|I was late for school.|私は学校に遅刻しました。|おくれた
+laugh|動|笑う|We laughed a lot.|私たちはたくさん笑いました。|わらう
+leaf|名|葉|The leaves are red in autumn.|秋には葉が赤くなります。
+learn|動|学ぶ|I want to learn Chinese.|私は中国語を学びたいです。|まなぶ
+leave|動|出発する、去る|The train leaves at seven.|電車は7時に出発します。|しゅっぱつする さる
+left|名|左|Turn left at the corner.|その角を左に曲がってください。|かこけい でた
+leg|名|脚|He hurt his leg.|彼は脚をけがしました。
+lemon|名|レモン|Add a little lemon juice.|少しレモン汁を加えてください。
+lesson|名|レッスン、授業|I have a piano lesson today.|今日はピアノのレッスンがあります。
+letter|名|手紙|I write a letter to my aunt.|おばに手紙を書きます。
+library|名|図書館|I study at the library.|私は図書館で勉強します。
+light|名|明かり、形 軽い|Turn on the light.|明かりをつけて。
+like|動|好む|I like dogs very much.|私は犬が大好きです。|このむ すき
+lion|名|ライオン|The lion is sleeping.|ライオンは眠っています。
+listen|動|聞く|I listen to music on the train.|電車で音楽を聞きます。|きく
+little|形|小さい、少しの|This is a little town.|これは小さな町です。|ちいさい すこし
+live|動|住む|I live in Sapporo.|私は札幌に住んでいます。|すむ
+long|形|長い|She has long hair.|彼女は長い髪をしています。|ながい
+look|動|見る、～に見える|Look at that bird.|あの鳥を見て。|みる
+loud|形|大きな音の|Don't speak in a loud voice.|大きな声で話さないで。|おおきなおと
+love|動|大好きである|I love this song.|私はこの歌が大好きです。|だいすき
+low|形|低い|The table is low.|そのテーブルは低いです。|ひくい
+lunch|名|昼食|We eat lunch at noon.|私たちは正午に昼食を食べます。
+mail|名|郵便|I sent it by mail.|それを郵便で送りました。
+make|動|作る|My mother makes a cake.|母はケーキを作ります。|つくる
+man|名|男性|That man is my father.|あの男性は私の父です。
+many|形|たくさんの|I have many friends.|私にはたくさんの友達がいます。
+map|名|地図|Look at this map.|この地図を見てください。
+March|名|3月|School ends in March.|学校は3月に終わります。
+market|名|市場|We bought fish at the market.|市場で魚を買いました。
+math|名|数学|Math is difficult for me.|数学は私には難しいです。
+May|名|5月|My birthday is in May.|私の誕生日は5月です。
+may|助|～してもよい|May I open the window?|窓を開けてもいいですか。
+meat|名|肉|I don't eat meat.|私は肉を食べません。
+meet|動|会う|I will meet him tomorrow.|明日彼に会います。|あう
+melon|名|メロン|This melon is sweet.|このメロンは甘いです。
+milk|名|牛乳|I drink milk every morning.|私は毎朝牛乳を飲みます。
+minute|名|分|Wait a minute, please.|少し待ってください。
+Monday|名|月曜日|We have a meeting on Monday.|月曜日に会議があります。
+money|名|お金|I don't have much money.|私はあまりお金を持っていません。
+monkey|名|さる|The monkey is eating a banana.|そのさるはバナナを食べています。
+month|名|月（暦の）|We moved here last month.|先月ここへ引っ越しました。
+moon|名|月|The moon is bright tonight.|今夜は月が明るいです。
+morning|名|朝|I get up early in the morning.|私は朝早く起きます。
+mother|名|母|My mother cooks dinner.|母は夕食を作ります。
+mountain|名|山|We climbed the mountain.|私たちはその山に登りました。
+mouth|名|口|Open your mouth.|口を開けて。
+movie|名|映画|We watched a movie last night.|昨夜、映画を見ました。
+much|形|たくさんの（量）|I don't have much time.|あまり時間がありません。|たくさん
+museum|名|博物館、美術館|We visited the museum.|私たちは博物館を訪れました。
+music|名|音楽|I listen to music every day.|私は毎日音楽を聞きます。
+must|助|～しなければならない|You must finish your homework.|宿題を終えなければなりません。
+name|名|名前|What is your name?|お名前は何ですか。
+near|前|～の近くに|The park is near my house.|公園は私の家の近くです。
+need|動|必要とする|I need a new pen.|新しいペンが必要です。|ひつよう
+new|形|新しい|I bought a new bike.|新しい自転車を買いました。|あたらしい
+newspaper|名|新聞|My father reads the newspaper.|父は新聞を読みます。
+next|形|次の|See you next week.|また来週。|つぎ
+nice|形|すてきな|That is a nice picture.|それはすてきな写真です。
+night|名|夜|It is quiet at night.|夜は静かです。
+nine|名|9|I have nine books.|私は本を9冊持っています。
+nineteen|名|19|She is nineteen.|彼女は19歳です。
+ninety|名|90|My grandmother is ninety.|私の祖母は90歳です。
+noon|名|正午|We eat lunch at noon.|私たちは正午に昼食を食べます。
+north|名|北|The wind is from the north.|風は北から吹いています。
+nose|名|鼻|My dog has a big nose.|うちの犬は鼻が大きいです。
+notebook|名|ノート|Write it in your notebook.|ノートに書きなさい。
+November|名|11月|It gets cold in November.|11月には寒くなります。
+now|副|今|I am busy now.|私は今忙しいです。|いま
+number|名|数、番号|Tell me your phone number.|電話番号を教えてください。
+nurse|名|看護師|My aunt is a nurse.|私のおばは看護師です。
+o'clock|副|～時|It is three o'clock.|3時です。|じ
+October|名|10月|We have a festival in October.|10月にお祭りがあります。
+of|前|～の|The color of the sky is blue.|空の色は青いです。
+office|名|事務所、会社|My father works in an office.|父は会社で働いています。
+often|副|しばしば|I often go to the library.|私はよく図書館へ行きます。
+old|形|古い、年をとった|This temple is very old.|このお寺はとても古いです。|ふるい としをとった
+on|前|～の上に|The book is on the table.|本はテーブルの上にあります。
+once|副|一度|I have been to Kyoto once.|京都に一度行ったことがあります。|いちど
+one|名|1|I have one brother.|私には兄が1人います。
+onion|名|たまねぎ|Cut the onion into pieces.|たまねぎを切ってください。
+only|副|ただ～だけ|I have only one pencil.|鉛筆を1本しか持っていません。
+open|動|開ける|Open the window, please.|窓を開けてください。|あける
+or|接|または|Tea or coffee?|紅茶かコーヒー、どちらにしますか。
+orange|名|オレンジ|I like orange juice.|私はオレンジジュースが好きです。
+other|形|他の|I have other plans.|他の予定があります。|ほか
+out|副|外へ|Let's go out for lunch.|昼食を食べに外へ行きましょう。|そと
+over|前|～の上に、～を越えて|The bird flew over the house.|鳥は家の上を飛びました。
+page|名|ページ|Open your book to page ten.|本の10ページを開いてください。
+paint|動|（絵の具で）描く|She likes to paint pictures.|彼女は絵を描くのが好きです。|えをかく
+pants|名|ズボン|I bought new pants.|新しいズボンを買いました。
+paper|名|紙|Write your name on this paper.|この紙に名前を書きなさい。
+parent|名|親|My parents work in Sapporo.|私の両親は札幌で働いています。
+park|名|公園|Let's meet at the park.|公園で会いましょう。
+party|名|パーティー|We had a birthday party.|私たちは誕生日パーティーをしました。
+pen|名|ペン|May I use your pen?|ペンを使ってもいいですか。
+pencil|名|えんぴつ|I need a pencil.|えんぴつが必要です。
+people|名|人々|Many people visit this park.|多くの人がこの公園を訪れます。
+person|名|人|She is a kind person.|彼女は親切な人です。
+pet|名|ペット|Do you have a pet?|ペットを飼っていますか。
+phone|名|電話|Can I use your phone?|電話を借りてもいいですか。
+photo|名|写真|Let's take a photo.|写真を撮りましょう。
+piano|名|ピアノ|My sister plays the piano.|姉はピアノをひきます。
+picnic|名|ピクニック|We went on a picnic.|私たちはピクニックに行きました。
+picture|名|写真、絵|Let's take a picture.|写真を撮りましょう。
+pig|名|ぶた|The pig is eating.|ぶたが食事をしています。
+pilot|名|パイロット|He wants to be a pilot.|彼はパイロットになりたいです。
+pink|形|ピンクの|She likes pink flowers.|彼女はピンクの花が好きです。
+pizza|名|ピザ|We ordered a pizza.|私たちはピザを注文しました。
+place|名|場所|This is a nice place.|ここはすてきな場所です。
+plan|名|計画|What is your plan for the weekend?|週末の予定は何ですか。
+plane|名|飛行機|We went there by plane.|私たちはそこへ飛行機で行きました。
+plant|名|植物|Water the plants.|植物に水をやりなさい。
+plate|名|皿|Put the food on the plate.|食べ物を皿にのせてください。
+play|動|遊ぶ、（競技を）する|They play tennis on Sunday.|彼らは日曜日にテニスをします。|あそぶ
+please|副|どうぞ|Sit down, please.|どうぞ座ってください。
+pool|名|プール|We swim in the pool.|私たちはプールで泳ぎます。
+poor|形|貧しい|He was a poor boy.|彼は貧しい少年でした。|まずしい
+popular|形|人気のある|This song is very popular.|この歌はとても人気があります。|にんきがある
+postcard|名|はがき|I sent a postcard from Kyoto.|京都からはがきを送りました。
+potato|名|じゃがいも|I like potato salad.|私はポテトサラダが好きです。
+practice|動|練習する|He practices the guitar every day.|彼は毎日ギターを練習します。|れんしゅうする
+present|名|プレゼント|Thank you for the present.|プレゼントをありがとう。
+pretty|形|かわいい|What a pretty flower!|なんてかわいい花でしょう。
+problem|名|問題|We have a problem.|問題があります。
+put|動|置く|Put the book on the desk.|本を机の上に置きなさい。|おく
+queen|名|女王|The queen visited the school.|女王は学校を訪れました。
+question|名|質問|I have a question.|質問があります。
+quiet|形|静かな|Please be quiet in the library.|図書館では静かにしてください。|しずか
+rabbit|名|うさぎ|We have a white rabbit.|私たちは白いうさぎを飼っています。
+rain|名|雨|The rain stopped.|雨がやみました。
+rainbow|名|虹|Look, a rainbow!|見て、虹だ。
+rainy|形|雨降りの|It is rainy today.|今日は雨です。|あめ
+read|動|読む|She reads a book before bed.|彼女は寝る前に本を読みます。|よむ
+ready|形|準備ができて|Are you ready?|準備はできていますか。|じゅんびができて
+really|副|本当に|I am really happy.|私は本当に幸せです。|ほんとうに
+red|形|赤い|I have a red bag.|私は赤いかばんを持っています。|あかい
+restaurant|名|レストラン|We had dinner at a restaurant.|レストランで夕食をとりました。
+rice|名|米、ごはん|We eat rice for lunch.|私たちは昼食にごはんを食べます。
+rich|形|裕福な|He is a rich man.|彼は裕福な男性です。|ゆうふく
+ride|動|（乗り物に）乗る|I ride my bike every day.|私は毎日自転車に乗ります。|のる
+right|形|正しい、右の|You are right.|あなたは正しいです。|ただしい みぎ
+river|名|川|The river is long.|その川は長いです。
+road|名|道路|Be careful on the road.|道路では気をつけてください。
+robot|名|ロボット|This robot can talk.|このロボットは話せます。
+room|名|部屋|My room is small.|私の部屋は小さいです。
+rose|名|バラ|She got a red rose.|彼女は赤いバラをもらいました。
+round|形|丸い|The table is round.|そのテーブルは丸いです。|まるい
+run|動|走る|I run in the park every morning.|私は毎朝公園を走ります。|はしる
+sad|形|悲しい|I feel sad today.|今日は悲しい気持ちです。|かなしい
+salad|名|サラダ|I ordered a salad.|サラダを注文しました。
+same|形|同じ|We are in the same class.|私たちは同じクラスです。|おなじ
+sandwich|名|サンドイッチ|I ate a sandwich for lunch.|昼食にサンドイッチを食べました。
+Saturday|名|土曜日|We don't have school on Saturday.|土曜日は学校がありません。
+say|動|言う|What did you say?|何と言いましたか。|いう
+school|名|学校|I go to school by bus.|私はバスで学校へ行きます。
+science|名|理科、科学|Science is interesting.|理科はおもしろいです。
+sea|名|海|I like swimming in the sea.|海で泳ぐのが好きです。
+season|名|季節|Which season do you like best?|どの季節がいちばん好きですか。
+see|動|見える、会う|I see a bird in the tree.|木に鳥が見えます。|みえる あう
+sell|動|売る|That shop sells fresh fruit.|あの店は新鮮な果物を売っています。|うる
+send|動|送る|I sent a letter to her.|彼女に手紙を送りました。|おくる
+September|名|9月|School starts in September.|学校は9月に始まります。
+seven|名|7|I get up at seven.|私は7時に起きます。
+seventeen|名|17|He is seventeen years old.|彼は17歳です。
+seventy|名|70|My grandfather is seventy.|私の祖父は70歳です。
+sheep|名|羊|There are many sheep on the farm.|農場にはたくさんの羊がいます。
+ship|名|船|We traveled by ship.|私たちは船で旅行しました。
+shirt|名|シャツ|He wears a white shirt.|彼は白いシャツを着ています。
+shoe|名|靴|Put on your shoes.|靴を履きなさい。
+shop|名|店|There is a nice shop near here.|この近くにすてきな店があります。
+short|形|短い、背が低い|She has short hair.|彼女は短い髪をしています。|みじかい せがひくい
+shoulder|名|肩|He hurt his shoulder.|彼は肩をけがしました。
+show|動|見せる|Show me your notebook.|ノートを見せてください。|みせる
+shower|名|シャワー|I take a shower every morning.|私は毎朝シャワーを浴びます。
+sick|形|病気の|He is sick today.|彼は今日病気です。|びょうき
+sing|動|歌う|She sings a song well.|彼女は上手に歌を歌います。|うたう
+sister|名|姉、妹|My sister plays the piano.|姉はピアノをひきます。
+sit|動|座る|Sit down, please.|座ってください。|すわる
+six|名|6|I have six pens.|私はペンを6本持っています。
+sixteen|名|16|She is sixteen years old.|彼女は16歳です。
+sixty|名|60|My grandmother is sixty.|私の祖母は60歳です。
+skate|動|スケートをする|We skate in winter.|私たちは冬にスケートをします。
+ski|動|スキーをする|We ski in the mountains.|私たちは山でスキーをします。
+skirt|名|スカート|She is wearing a blue skirt.|彼女は青いスカートをはいています。
+sky|名|空|The sky is clear today.|今日は空が澄んでいます。
+sleep|動|眠る|I sleep for eight hours.|私は8時間眠ります。|ねむる
+sleepy|形|眠い|I feel sleepy now.|今、眠いです。|ねむい
+slow|形|遅い|The train is slow today.|今日は電車が遅いです。|おそい
+small|形|小さい|I live in a small town.|私は小さな町に住んでいます。|ちいさい
+smile|動|ほほえむ|She always smiles.|彼女はいつもほほえんでいます。
+snow|名|雪|We have a lot of snow here.|ここは雪が多いです。
+snowy|形|雪の降る|It is snowy today.|今日は雪が降っています。|ゆき
+so|副|とても|I am so happy.|私はとても幸せです。
+soccer|名|サッカー|I play soccer after school.|放課後にサッカーをします。
+sofa|名|ソファ|My cat sleeps on the sofa.|うちのねこはソファで寝ます。
+some|形|いくつかの|I have some questions.|いくつか質問があります。
+son|名|息子|Their son is a student.|彼らの息子は学生です。
+song|名|歌|This is my favorite song.|これは私のお気に入りの歌です。
+soon|副|すぐに|I will be there soon.|すぐにそこへ行きます。
+sound|名|音|I heard a strange sound.|変な音が聞こえました。
+soup|名|スープ|This soup is delicious.|このスープはおいしいです。
+south|名|南|The wind is from the south.|風は南から吹いています。
+spaghetti|名|スパゲッティ|We had spaghetti for lunch.|昼食にスパゲッティを食べました。
+speak|動|話す|He speaks English well.|彼は英語を上手に話します。|はなす
+special|形|特別な|Today is a special day.|今日は特別な日です。|とくべつ
+spoon|名|スプーン|Use a spoon to eat soup.|スープを飲むのにスプーンを使いなさい。
+sport|名|スポーツ|I like many kinds of sports.|私はたくさんの種類のスポーツが好きです。
+spring|名|春|Spring is my favorite season.|春は私の大好きな季節です。
+stand|動|立つ|Please stand up.|立ってください。|たつ
+star|名|星|I can see many stars tonight.|今夜はたくさんの星が見えます。
+start|動|始める、始まる|The movie starts at seven.|映画は7時に始まります。|はじめる はじまる
+station|名|駅|The station is near my house.|駅は家の近くです。
+stay|動|滞在する|We stayed at a hotel.|私たちはホテルに滞在しました。|たいざいする
+still|副|まだ|It is still raining.|まだ雨が降っています。
+stop|動|止まる、やめる|The bus stopped here.|バスがここに止まりました。|とまる やめる
+store|名|店|I bought it at that store.|あの店でそれを買いました。
+story|名|物語|Tell me a story.|物語を聞かせてください。
+strawberry|名|いちご|I like strawberry cake.|私はいちごのケーキが好きです。
+street|名|通り|Cross the street here.|ここで通りを渡りなさい。
+strong|形|強い|He is very strong.|彼はとても強いです。|つよい
+student|名|生徒、学生|He is a high school student.|彼は高校生です。
+study|動|勉強する|I study English every day.|私は毎日英語を勉強します。|べんきょうする
+subject|名|科目|My favorite subject is science.|私の好きな科目は理科です。
+summer|名|夏|We swim in the sea in summer.|夏は海で泳ぎます。
+sun|名|太陽|The sun is bright today.|今日は太陽が明るいです。
+Sunday|名|日曜日|We stay home on Sunday.|日曜日は家にいます。
+sunny|形|晴れた|It is sunny today.|今日は晴れです。|はれた
+supermarket|名|スーパーマーケット|My mother goes to the supermarket.|母はスーパーマーケットへ行きます。
+swim|動|泳ぐ|Can you swim fast?|速く泳げますか。|およぐ
+table|名|テーブル|The book is on the table.|本はテーブルの上にあります。
+take|動|取る、（時間が）かかる|It takes ten minutes.|10分かかります。|とる かかる
+talk|動|話す|Let's talk about the movie.|映画について話しましょう。|はなす
+tall|形|背が高い|He is very tall.|彼はとても背が高いです。|せがたかい
+taxi|名|タクシー|We took a taxi to the hotel.|ホテルまでタクシーに乗りました。
+tea|名|お茶、紅茶|I drink tea after dinner.|私は夕食後にお茶を飲みます。
+teach|動|教える|My mother teaches English.|私の母は英語を教えています。|おしえる
+teacher|名|先生|Ms. Green is our English teacher.|グリーン先生は私たちの英語の先生です。
+team|名|チーム|Our team won the game.|私たちのチームは試合に勝ちました。
+telephone|名|電話|Answer the telephone, please.|電話に出てください。
+television|名|テレビ|We watch television after dinner.|私たちは夕食後にテレビを見ます。
+tell|動|伝える、教える|Please tell me the way.|道を教えてください。|つたえる おしえる
+ten|名|10|I have ten fingers.|私には指が10本あります。
+tennis|名|テニス|Let's play tennis.|テニスをしましょう。
+tent|名|テント|We put up a tent.|私たちはテントを張りました。
+test|名|テスト|We have a math test tomorrow.|明日数学のテストがあります。
+than|接|～よりも|She is taller than me.|彼女は私より背が高いです。
+thank|動|感謝する|Thank you for your help.|手伝ってくれてありがとう。|かんしゃする
+then|副|それから|We ate lunch, then went home.|昼食を食べて、それから帰宅しました。
+there|副|そこに|Put it there.|それをそこに置いてください。
+thing|名|もの、こと|I have many things to do.|やることがたくさんあります。
+think|動|思う、考える|I think it will rain.|雨が降ると思います。|おもう かんがえる
+thirsty|形|のどが渇いた|I am thirsty.|のどが渇きました。|のどがかわいた
+thirteen|名|13|She is thirteen years old.|彼女は13歳です。
+thirty|名|30|The bus leaves at nine thirty.|バスは9時30分に出発します。
+three|名|3|I have three pens.|私はペンを3本持っています。
+Thursday|名|木曜日|We have music class on Thursday.|木曜日に音楽の授業があります。
+ticket|名|切符、チケット|I bought two tickets.|切符を2枚買いました。
+tiger|名|とら|The tiger is sleeping.|とらは眠っています。
+time|名|時間|What time is it?|今何時ですか。
+tired|形|疲れた|I am very tired today.|今日はとても疲れています。|つかれた
+to|前|～へ|I go to school every day.|私は毎日学校へ行きます。
+today|副|今日|Today is my birthday.|今日は私の誕生日です。|きょう
+together|副|いっしょに|Let's go together.|いっしょに行きましょう。
+tomato|名|トマト|I grow tomatoes in my garden.|私は庭でトマトを育てています。
+tomorrow|副|明日|See you tomorrow.|また明日。|あした
+tonight|副|今夜|Let's watch a movie tonight.|今夜映画を見ましょう。|こんや
+too|副|～もまた、～すぎる|I like it too.|私もそれが好きです。
+tooth|名|歯|Brush your teeth.|歯を磨きなさい。
+top|名|頂上、上部|We reached the top.|私たちは頂上に着きました。
+touch|動|触る|Don't touch this.|これに触らないで。|さわる
+towel|名|タオル|Bring a towel.|タオルを持ってきて。
+town|名|町|I live in a small town.|私は小さな町に住んでいます。
+toy|名|おもちゃ|My brother has many toys.|弟はたくさんのおもちゃを持っています。
+train|名|電車|The train leaves at seven.|電車は7時に出発します。
+travel|動|旅行する|They travel every summer.|彼らは毎年夏に旅行します。|りょこうする
+tree|名|木|A bird is in the tree.|鳥が木にとまっています。
+trip|名|旅行|We took a trip to Kyoto.|京都へ旅行に行きました。
+truck|名|トラック|A big truck passed by.|大きなトラックが通り過ぎました。
+try|動|やってみる|Try this cake.|このケーキを食べてみて。
+Tuesday|名|火曜日|We have gym class on Tuesday.|火曜日に体育の授業があります。
+turn|動|曲がる、回す|Turn left at the corner.|その角を左に曲がってください。|まがる まわす
+twelve|名|12|There are twelve months.|1年は12か月です。
+twenty|名|20|She is twenty years old.|彼女は20歳です。
+two|名|2|I have two brothers.|私には兄弟が2人います。
+umbrella|名|かさ|Bring your umbrella.|かさを持ってきて。
+uncle|名|おじ|My uncle lives in Osaka.|私のおじは大阪に住んでいます。
+under|前|～の下に|The cat is under the table.|猫はテーブルの下にいます。
+understand|動|理解する|I don't understand this question.|この問題が理解できません。|りかいする
+up|副|上へ|Stand up, please.|立ってください。|うえ
+use|動|使う|May I use your pen?|ペンを使ってもいいですか。|つかう
+useful|形|役に立つ|This app is very useful.|このアプリはとても役に立ちます。|やくにたつ
+usually|副|たいてい|I usually get up at six.|私はたいてい6時に起きます。
+vacation|名|休暇|I enjoyed my summer vacation.|夏休みを楽しみました。
+vegetable|名|野菜|Eat more vegetables.|もっと野菜を食べなさい。
+very|副|とても|This is very interesting.|これはとてもおもしろいです。
+video|名|動画、ビデオ|I watched a funny video.|おもしろい動画を見ました。
+violin|名|バイオリン|She plays the violin.|彼女はバイオリンをひきます。
+visit|動|訪れる|We visited our grandmother.|祖母を訪ねました。|おとずれる
+voice|名|声|She has a beautiful voice.|彼女は美しい声をしています。
+volleyball|名|バレーボール|We played volleyball at school.|学校でバレーボールをしました。
+wait|動|待つ|Please wait a moment.|少し待ってください。|まつ
+walk|動|歩く|Let's walk to the station.|駅まで歩きましょう。|あるく
+wall|名|壁|There is a clock on the wall.|壁に時計があります。
+want|動|ほしい|I want a new camera.|新しいカメラがほしいです。
+warm|形|暖かい|It is warm today.|今日は暖かいです。|あたたかい
+wash|動|洗う|Wash your hands before dinner.|夕食の前に手を洗いなさい。|あらう
+watch|動|（じっと）見る、名 腕時計|I watch TV every night.|私は毎晩テレビを見ます。|みる うでどけい
+water|名|水|Can I have some water?|水をもらえますか。
+weak|形|弱い|The tea is too weak.|そのお茶は薄すぎます。|よわい
+wear|動|身につけている|She is wearing a blue dress.|彼女は青いドレスを着ています。|みにつけている きる
+weather|名|天気|The weather is nice today.|今日は天気がよいです。
+Wednesday|名|水曜日|We have art class on Wednesday.|水曜日に美術の授業があります。
+week|名|週|I have a test next week.|来週テストがあります。
+weekend|名|週末|What do you do on weekends?|週末は何をしますか。
+welcome|間|ようこそ|Welcome to our school.|私たちの学校へようこそ。
+well|副|上手に|He plays soccer well.|彼はサッカーが上手です。|じょうずに
+what|代|何|What is your name?|お名前は何ですか。
+when|副|いつ|When is your birthday?|あなたの誕生日はいつですか。
+where|副|どこに|Where do you live?|どこに住んでいますか。
+which|代|どちら|Which do you like better?|どちらが好きですか。
+white|形|白い|He wears a white shirt.|彼は白いシャツを着ています。|しろい
+who|代|だれ|Who is that boy?|あの男の子はだれですか。
+why|副|なぜ|Why are you late?|なぜ遅刻したのですか。
+wife|名|妻|His wife is a teacher.|彼の妻は教師です。
+will|助|～するつもりだ|I will visit Kyoto next year.|来年京都を訪れるつもりです。
+win|動|勝つ|Our team won the game.|私たちのチームは試合に勝ちました。|かつ
+wind|名|風|A strong wind is blowing.|強い風が吹いています。
+window|名|窓|Please open the window.|窓を開けてください。
+windy|形|風の強い|It is windy today.|今日は風が強いです。|かぜがつよい
+winter|名|冬|It snows a lot in winter.|冬はたくさん雪が降ります。
+with|前|～といっしょに|I live with my family.|私は家族といっしょに住んでいます。
+woman|名|女性|That woman is my mother.|あの女性は私の母です。
+wonderful|形|すばらしい|We had a wonderful time.|私たちはすばらしい時間を過ごしました。
+word|名|単語、言葉|Learn ten new words a day.|1日に新しい単語を10個覚えなさい。
+world|名|世界|I want to travel around the world.|世界中を旅行したいです。
+write|動|書く|Write your name here.|ここに名前を書いてください。|かく
+year|名|年|We lived there for three years.|私たちはそこに3年住みました。
+yellow|形|黄色の|She has a yellow bag.|彼女は黄色いかばんを持っています。|きいろ
+yesterday|副|昨日|I saw him yesterday.|昨日彼に会いました。|きのう
+young|形|若い|She looks young.|彼女は若く見えます。|わかい
+zoo|名|動物園|We went to the zoo last Sunday.|先週の日曜日に動物園に行きました。
+was|動|be動詞 am/is の過去形|I was busy yesterday.|私は昨日忙しかったです。|かこけい
+were|動|be動詞 are の過去形|They were at school.|彼らは学校にいました。|かこけい
+went|動|go の過去形|I went to the park.|私は公園へ行きました。|かこけい いった
+came|動|come の過去形|He came home at six.|彼は6時に帰ってきました。|かこけい きた
+ate|動|eat の過去形|I ate a sandwich.|私はサンドイッチを食べました。|かこけい たべた
+did|動|do の過去形|I did my homework.|私は宿題をしました。|かこけい した
+had|動|have の過去形|We had a good time.|私たちは楽しい時間を過ごしました。|かこけい もっていた
+made|動|make の過去形|She made a cake.|彼女はケーキを作りました。|かこけい つくった
+took|動|take の過去形|I took a picture.|私は写真を撮りました。|かこけい とった
+saw|動|see の過去形|I saw a bird.|私は鳥を見ました。|かこけい みた
+got|動|get の過去形|I got a present.|私はプレゼントをもらいました。|かこけい
+said|動|say の過去形|He said hello.|彼はこんにちはと言いました。|かこけい いった
+gave|動|give の過去形|She gave me a book.|彼女は私に本をくれました。|かこけい あげた
+ran|動|run の過去形|I ran to school.|私は学校まで走りました。|かこけい はしった
+wrote|動|write の過去形|I wrote a letter.|私は手紙を書きました。|かこけい かいた
+bought|動|buy の過去形|I bought a new bag.|私は新しいかばんを買いました。|かこけい かった
+brought|動|bring の過去形|She brought her lunch.|彼女は昼食を持ってきました。|かこけい もってきた
+taught|動|teach の過去形|He taught us English.|彼は私たちに英語を教えました。|かこけい おしえた
+thought|動|think の過去形|I thought it was fun.|私はそれが楽しいと思いました。|かこけい おもった
+knew|動|know の過去形|I knew his name.|私は彼の名前を知っていました。|かこけい しっていた
+spoke|動|speak の過去形|She spoke to me.|彼女は私に話しかけました。|かこけい はなした
+swam|動|swim の過去形|We swam in the sea.|私たちは海で泳ぎました。|かこけい およいだ
+sang|動|sing の過去形|She sang a song.|彼女は歌を歌いました。|かこけい うたった
+drank|動|drink の過去形|I drank some milk.|私は牛乳を飲みました。|かこけい のんだ
+slept|動|sleep の過去形|I slept well last night.|私は昨夜よく眠りました。|かこけい ねむった
+left|動|leave の過去形|The train left at seven.|電車は7時に出発しました。|かこけい でた
+felt|動|feel の過去形|I felt happy.|私はうれしく感じました。|かこけい かんじた
+found|動|find の過去形|I found my key.|私はかぎを見つけました。|かこけい みつけた
+met|動|meet の過去形|I met her yesterday.|私は昨日彼女に会いました。|かこけい あった
+sat|動|sit の過去形|He sat on the chair.|彼はいすに座りました。|かこけい すわった
+stood|動|stand の過去形|She stood by the door.|彼女はドアのそばに立っていました。|かこけい たった
+told|動|tell の過去形|He told me the story.|彼は私にその話をしました。|かこけい つたえた
+lost|動|lose の過去形|I lost my pencil.|私は鉛筆をなくしました。|かこけい なくした
+won|動|win の過去形|Our team won.|私たちのチームは勝ちました。|かこけい かった
+began|動|begin の過去形|The movie began at six.|映画は6時に始まりました。|かこけい はじまった
+children|名|child の複数形|The children are playing.|子どもたちが遊んでいます。
+men|名|man の複数形|Two men are waiting.|2人の男性が待っています。
+women|名|woman の複数形|The women are teachers.|その女性たちは教師です。
+feet|名|foot の複数形|My feet are cold.|足が冷たいです。
+teeth|名|tooth の複数形|Brush your teeth.|歯を磨きなさい。
+leaves|名|leaf の複数形|The leaves are falling.|葉が落ちています。
+knives|名|knife の複数形|Put the knives here.|ナイフをここに置いてください。
+better|形|good の比較級|This one is better.|こちらのほうがよいです。|ひかくきゅう
+best|形|good の最上級|This is the best song.|これがいちばんよい歌です。|さいじょうきゅう
+more|形|many/much の比較級|I want more juice.|もっとジュースがほしいです。|ひかくきゅう
+most|形|many/much の最上級|Most students like music.|ほとんどの生徒は音楽が好きです。|さいじょうきゅう
+bigger|形|big の比較級|My bag is bigger than yours.|私のかばんはあなたのより大きいです。|ひかくきゅう
+taller|形|tall の比較級|He is taller than me.|彼は私より背が高いです。|ひかくきゅう
+get|動|手に入れる、着く|I get up at six.|私は6時に起きます。|てにいれる つく
+get up|句|起きる|I get up at six every day.|私は毎日6時に起きます。|おきる
+go to bed|句|寝る|I go to bed at nine.|私は9時に寝ます。|ねる
+look at|句|～を見る|Look at the blackboard.|黒板を見なさい。|みる
+listen to|句|～を聞く|Listen to the music.|音楽を聞きなさい。|きく
+look for|句|～をさがす|I am looking for my key.|私はかぎをさがしています。
+talk about|句|～について話す|Let's talk about the movie.|映画について話しましょう。|はなす
+come from|句|～の出身である|I come from Sapporo.|私は札幌の出身です。|しゅっしん
+take a picture|句|写真を撮る|Let's take a picture here.|ここで写真を撮りましょう。|しゃしんをとる
+go shopping|句|買い物に行く|We go shopping on Sunday.|私たちは日曜日に買い物に行きます。|かいものにいく
+after school|句|放課後に|I play soccer after school.|私は放課後にサッカーをします。|ほうかご
+every day|句|毎日|I study English every day.|私は毎日英語を勉強します。|まいにち
+a lot of|句|たくさんの|I have a lot of books.|私は本をたくさん持っています。
+a cup of|句|カップ1杯の|I want a cup of tea.|紅茶を1杯ほしいです。|かっぷいっぱい
+a glass of|句|コップ1杯の|Can I have a glass of water?|コップ1杯の水をもらえますか。|こっぷいっぱい
+in front of|句|～の前に|The car is in front of the house.|車は家の前にあります。|まえ
+next to|句|～のとなりに|The bank is next to the shop.|銀行は店のとなりにあります。
+on foot|句|歩いて|I go to school on foot.|私は歩いて学校へ行きます。|あるいて
+at home|句|家で|I stay at home on Sunday.|私は日曜日は家にいます。|いえ
+of course|句|もちろん|Of course, I can help you.|もちろん、手伝えます。
+all right|句|大丈夫、わかった|All right, let's go.|わかりました、行きましょう。|だいじょうぶ わかった
+How much|句|いくら|How much is this book?|この本はいくらですか。
+How many|句|いくつ|How many pencils do you have?|鉛筆を何本持っていますか。
+How old|句|何歳|How old are you?|あなたは何歳ですか。|なんさい
+How about|句|～はどうですか|How about some tea?|お茶はいかがですか。
+What time|句|何時|What time do you get up?|何時に起きますか。|なんじ
+Let's|句|～しましょう|Let's play tennis.|テニスをしましょう。
+Here you are|句|はい、どうぞ|Here you are. Thank you.|はい、どうぞ。ありがとう。
+Excuse me|句|すみません|Excuse me, where is the station?|すみません、駅はどこですか。
+Nice to meet you|句|はじめまして|Nice to meet you, I am Ken.|はじめまして、私はケンです。
+See you|句|またね|See you tomorrow.|また明日。
+You are welcome|句|どういたしまして|Thank you. You are welcome.|ありがとう。どういたしまして。
+I see|句|なるほど|I see. That is interesting.|なるほど。それはおもしろいですね。
+over there|句|あそこに|The library is over there.|図書館はあそこです。
+right now|句|今すぐ|Do it right now.|今すぐやりなさい。|いますぐ
+this morning|句|今朝|I saw him this morning.|今朝彼に会いました。|けさ
+last night|句|昨夜|We watched a movie last night.|昨夜映画を見ました。|さくや ゆうべ
+next time|句|次回|Let's meet next time.|次回会いましょう。|じかい
+be good at|句|～が得意である|She is good at singing.|彼女は歌が得意です。|とくい
+want to|句|～したい|I want to go to Kyoto.|私は京都へ行きたいです。
+have to|句|～しなければならない|I have to study tonight.|私は今夜勉強しなければなりません。
+would like|句|～がほしい|I would like some water.|水をいただきたいです。
+stand up|句|立ち上がる|Please stand up.|立ってください。|たちあがる
+sit down|句|座る|Please sit down.|座ってください。|すわる
+put on|句|身につける|Put on your shoes.|靴を履きなさい。|みにつける
+wake up|句|目を覚ます|I wake up at six.|私は6時に目を覚まします。|めをさます
+go home|句|帰宅する|I go home at five.|私は5時に帰宅します。|きたくする
+come in|句|入る|Please come in.|どうぞお入りください。|はいる
+police officer|名|警察官|My uncle is a police officer.|私のおじは警察官です。
+singer|名|歌手|He is a famous singer.|彼は有名な歌手です。
+pianist|名|ピアニスト|She wants to be a pianist.|彼女はピアニストになりたいです。
+dancer|名|ダンサー|My sister is a good dancer.|姉はダンスが上手です。
+driver|名|運転手|The bus driver is kind.|そのバスの運転手は親切です。
+dessert|名|デザート|What do you want for dessert?|デザートは何がいいですか。
+chopsticks|名|はし|I eat rice with chopsticks.|私ははしでごはんを食べます。
+eraser|名|消しゴム|Whose eraser is this?|これはだれの消しゴムですか。
+magazine|名|雑誌|I read a magazine on the train.|電車で雑誌を読みます。
+e-mail|名|Eメール|I send an e-mail to my friend.|友達にEメールを送ります。
+cafeteria|名|カフェテリア、食堂|We eat lunch in the cafeteria.|私たちは食堂で昼食を食べます。
+theater|名|劇場、映画館|We went to the theater.|私たちは映画館へ行きました。
+bank|名|銀行|The bank is next to the store.|銀行は店のとなりにあります。
+post|名|郵便、郵便ポスト|Put the letter in the post.|手紙をポストに入れてください。
+ground|名|地面、土地|The ground is wet.|地面がぬれています。
+flute|名|フルート|She plays the flute.|彼女はフルートを吹きます。
+concert|名|演奏会、コンサート|We went to a concert.|私たちはコンサートに行きました。
+meter|名|メートル|The pool is twenty meters long.|そのプールは20メートルです。
+centimeter|名|センチメートル|This pencil is ten centimeters.|この鉛筆は10センチです。
+kilogram|名|キログラム|This bag is five kilograms.|このかばんは5キロです。
+cent|名|セント|It is fifty cents.|それは50セントです。
+yen|名|円|This book is 500 yen.|この本は500円です。
+P.E.|名|体育|We have P.E. on Tuesday.|火曜日に体育があります。
+second|名|秒|Wait ten seconds.|10秒待ってください。
+bathroom|名|浴室、トイレ|The bathroom is upstairs.|浴室は2階です。
+TV|名|テレビ|I watch TV after dinner.|私は夕食後にテレビを見ます。
+high school|名|高校|My brother goes to high school.|兄は高校に通っています。
+player|名|選手、演奏者|He is a good tennis player.|彼はテニスが上手な選手です。
+blackboard|名|黒板|Look at the blackboard.|黒板を見なさい。
+mine|代|私のもの|This pen is mine.|このペンは私のものです。
+us|代|私たちを|Please help us.|私たちを手伝ってください。
+ours|代|私たちのもの|That classroom is ours.|あの教室は私たちのものです。
+yours|代|あなたのもの|Is this bag yours?|このかばんはあなたのものですか。
+hers|代|彼女のもの|That notebook is hers.|あのノートは彼女のものです。
+theirs|代|彼らのもの|These seats are theirs.|これらの席は彼らのものです。
+them|代|彼らを|I saw them at the park.|公園で彼らを見かけました。
+their|代|彼らの|This is their house.|これは彼らの家です。
+these|代|これら|These are my books.|これらは私の本です。
+those|代|あれら|Those are my shoes.|あれらは私の靴です。
+after|前|～の後に|I play soccer after school.|私は放課後にサッカーをします。
+sometimes|副|ときどき|I sometimes cook dinner.|私はときどき夕食を作ります。
+be from|句|～の出身である|Where are you from?|あなたはどこの出身ですか。|しゅっしん
+be ready for|句|～の準備ができている|Are you ready for the party?|パーティーの準備はできていますか。|じゅんびができている
+before dinner|句|夕食前に|He does his homework before dinner.|彼は夕食前に宿題をします。|ゆうしょくまえ
+in the morning|句|午前中に、朝に|Lisa cleans her room in the morning.|リサは午前中に部屋をそうじします。|ごぜんちゅう あさ
+in the afternoon|句|午後に|We play soccer in the afternoon.|私たちは午後にサッカーをします。|ごご
+at night|句|夜に|He reads books at night.|彼は夜に本を読みます。|よる
+on weekends|句|週末に|What do you do on weekends?|週末は何をしますか。|しゅうまつ
+time for|句|～の時間|It is time for bed.|もう寝る時間です。|じかん
+years old|句|～歳|My grandfather is 65 years old.|私の祖父は65歳です。|さい
+at school|句|学校で|See you tomorrow at school.|明日また学校でね。|がっこう
+in class|句|授業中に|Is Mr. Taylor in class now?|テイラー先生は今、授業中ですか。|じゅぎょうちゅう
+on TV|句|テレビで|I am watching a game on TV.|私はテレビで試合を見ています。
+by bike|句|自転車で|Emily goes to school by bike.|エミリーは自転車で学校へ行きます。|じてんしゃ
+by bus|句|バスで|I go to school by bus.|私はバスで学校へ行きます。
+from to|句|～から…まで|The festival is from four to eight.|その祭りは4時から8時までです。
+very much|句|とても、たいへん|She likes curry very much.|彼女はカレーがとても好きです。
+very well|句|とても上手に|Maki can speak French very well.|マキはフランス語をとても上手に話せます。|とてもじょうず
+a little|句|少し|It is a little cold today.|今日は少し寒いです。|すこし
+brush teeth|句|歯をみがく|Brush your teeth, Tony.|歯をみがきなさい、トニー。|はをみがく
+do homework|句|宿題をする|When do you do your homework?|あなたはいつ宿題をしますか。|しゅくだいをする
+have breakfast|句|朝食をとる|Let's have breakfast.|朝食をとりましょう。|ちょうしょくをとる
+take a bath|句|風呂に入る|He is taking a bath now.|彼は今、風呂に入っています。|ふろにはいる
+live in|句|～に住む|Eri lives in Kyoto.|エリは京都に住んでいます。|すむ
+live with|句|～といっしょに住む|Does your grandmother live with you?|おばあさんはあなたと住んでいますか。|いっしょにすむ
+take the train|句|電車に乗る|I usually take the train to the office.|私はふだん電車で事務所へ行きます。|でんしゃにのる
+talk on the phone|句|電話で話をする|We talk on the phone every night.|私たちは毎晩電話で話をします。|でんわではなす
+work at|句|～で働く|My mother is working at the hospital.|母は病院で働いています。|はたらく
+write to|句|～に手紙を書く|Ayane sometimes writes to her aunt.|アヤネはときどきおばさんに手紙を書きます。|てがみをかく
+go to|句|～に行く|What time do you go to work?|あなたは何時に仕事に行きますか。|いく
+come to|句|～に来る|How do you come to school?|あなたはどうやって学校に来ますか。|くる
+Whose|疑|だれの|Whose eraser is this?|これはだれの消しゴムですか。
+How are you?|会|元気ですか。|Hello. How are you?|こんにちは。元気ですか。|げんきですか
+Nice to meet you.|会|はじめまして。|Nice to meet you, Aya.|はじめまして、アヤ。
+Thank you for|会|～をありがとう。|Thank you for your letter.|手紙をありがとう。
+You are welcome.|会|どういたしまして。|Thank you. You are welcome.|ありがとう。どういたしまして。
+I am sorry.|会|ごめんなさい。|I am sorry. I don't know.|ごめんなさい。知りません。
+Excuse me.|会|すみません。|Excuse me. Do you speak English?|すみません。英語を話しますか。
+Do you like|会|あなたは～が好きですか。|Do you like dogs?|あなたは犬が好きですか。|すきですか
+How about you?|会|あなたは？|I have a sister. How about you?|私は姉がいます。あなたは？
+is ready|会|～の準備ができました。|Dinner is ready, Dad.|夕食の準備ができたよ、お父さん。|じゅんびができました
+Let's have some|会|～を食べましょう。|Let's have some bread.|パンを食べましょう。|たべましょう
+Can you|会|～してくれますか。|Can you help me, George?|手伝ってくれる、ジョージ？
+Can I|会|～してもいいですか。|Can I close the door?|ドアを閉めてもいいですか。
+Sure.|会|もちろん。いいですよ。|Sure. Here you are.|いいですよ。はい、どうぞ。
+Good idea.|会|いい考えだね。|Good idea. Let's go.|いい考えだね。行こう。|いいかんがえ
+All right.|会|わかりました。いいですよ。|All right. I am coming.|わかりました。今行きます。
+Here you are.|会|はい、どうぞ。|Here you are. Thank you.|はい、どうぞ。ありがとう。
+Yes, please.|会|はい、お願いします。|Yes, please. I want some.|はい、お願いします。少しほしいです。|おねがいします
+No, thank you.|会|いいえ、結構です。|No, thank you. I am full.|いいえ、結構です。おなかがいっぱいです。|けっこうです
+lot|名|くじ、たくさん|There are a lot of books here.|ここには本がたくさんあります。
+course|名|進路、コース|Of course, I can help you.|もちろん、手伝えます。
+shopping|名|買い物|My father goes shopping by car.|父は車で買い物に行きます。
+police|名|警察|Call the police.|警察を呼んでください。
+officer|名|役人、警官|She is a police officer.|彼女は警察官です。
+brush|動|みがく、名 ブラシ|Brush your teeth after breakfast.|朝食の後に歯をみがきなさい。|みがく ぶらし
+work|動|働く、名 仕事|My mother works at a hospital.|母は病院で働いています。|はたらく しごと
+wake|動|目を覚ます|I wake up at six every day.|私は毎日6時に目を覚まします。|めをさます
+sorry|形|すまなく思って|I am sorry. I am late.|ごめんなさい。遅れました。|すまなく
+excuse|動|許す|Excuse me, where is the station?|すみません、駅はどこですか。|ゆるす
+weekends|名|weekend の複数形|I play tennis on weekends.|私は週末にテニスをします。
+years|名|year の複数形|My sister is ten years old.|私の妹は10歳です。
+bike|名|自転車|He goes to school by bike.|彼は自転車で学校へ行きます。
+this|代|これ、形 この|This is my book.|これは私の本です。
+be|動|～である（am/is/are のもとの形）|Be quiet, please.|静かにしてください。|である
+am|動|be動詞（I といっしょに使う）|I am a student.|私は学生です。|びーどうし
+is|動|be動詞（he/she/it などと使う）|This is my pen.|これは私のペンです。|びーどうし
+are|動|be動詞（you/we/they と使う）|You are my friend.|あなたは私の友達です。|びーどうし
+I|代|私は|I am from Sapporo.|私は札幌の出身です。
+me|代|私を、私に|Please call me tonight.|今夜私に電話してください。
+you|代|あなたは、あなたを|You are kind.|あなたは親切です。
+a|冠|1つの（数えられる名詞の前につける）|I have a pen.|私はペンを1本持っています。
+the|冠|その（一度出たものや1つしかないものにつける）|The sun is bright.|太陽は明るいです。
+yes|副|はい|Yes, I like dogs.|はい、私は犬が好きです。
+no|副|いいえ、形 1つも～ない|No, thank you.|いいえ、結構です。|いいえ ない
+would|助|would like で「～がほしい」の丁寧な言い方|I would like some water.|水をいただきたいです。|ていねい
+`;
+
+const DICT = RAW.trim().split("\n").map(l=>{
+  const p = l.split("|");
+  return {w:p[0], pos:p[1], ja:p[2], ex:p[3], exja:p[4], yomi:p[5]||""};
+});
+const INDEX = {}; DICT.forEach(e=>INDEX[e.w.toLowerCase()] = e);
+
+/* 語尾の変化を元の形に戻す（plays → play, goes → go, studies → study） */
+function baseForms(w){
+  const t = w.toLowerCase(), out = [];
+  const push = (base, label) => { if(base && base !== t) out.push([base, label]); };
+  // 3人称単数の s / 名詞の複数形
+  if(/ies$/.test(t))      push(t.slice(0,-3)+"y", "3人称単数・複数");
+  if(/(ches|shes|sses|xes|zes|oes)$/.test(t)) push(t.slice(0,-2), "3人称単数・複数");
+  if(/s$/.test(t) && !/ss$/.test(t)) push(t.slice(0,-1), "3人称単数・複数");
+  // 過去形・過去分詞
+  if(/ied$/.test(t))      push(t.slice(0,-3)+"y", "過去形");
+  if(/ed$/.test(t))     { push(t.slice(0,-2), "過去形"); push(t.slice(0,-1), "過去形"); }
+  // ing形
+  if(/ing$/.test(t))    { push(t.slice(0,-3), "ing形"); push(t.slice(0,-3)+"e", "ing形"); }
+  // 子音を重ねた形（stopped, running, bigger）
+  const m = t.match(/^(.*?)([bdfglmnprt])\2(ed|ing|er|est)$/);
+  if(m) push(m[1]+m[2], m[3]==="ing" ? "ing形" : m[3]==="ed" ? "過去形" : "比較の形");
+  // 比較級・最上級
+  if(/er$/.test(t))     { push(t.slice(0,-2), "比較級"); push(t.slice(0,-1), "比較級"); }
+  if(/iest$/.test(t))     push(t.slice(0,-4)+"y", "最上級");
+  if(/est$/.test(t))    { push(t.slice(0,-3), "最上級"); push(t.slice(0,-2), "最上級"); }
+  return out;
+}
+
+function resolveForm(term){
+  for(const [base, label] of baseForms(term)){
+    const e = INDEX[base];
+    if(e) return { entry: e, label, typed: term };
+  }
+  return null;
+}
+document.getElementById("count").textContent = `収録 ${DICT.length}語`;
+
+/* 保存（アーティファクト内は window.storage、単体公開時は localStorage） */
+const KEY = "eiken5:bookmarks";
+const store = {
+  async get(){
+    try{
+      if(window.storage){ const r = await window.storage.get(KEY); return r ? JSON.parse(r.value) : []; }
+      return JSON.parse(localStorage.getItem(KEY) || "[]");
+    }catch(e){ return []; }
+  },
+  async set(v){
+    try{
+      if(window.storage){ await window.storage.set(KEY, JSON.stringify(v)); return true; }
+      localStorage.setItem(KEY, JSON.stringify(v)); return true;
+    }catch(e){ return false; }
+  }
+};
+const MISS_KEY = "eiken5:missing";
+const storeMiss = {
+  async get(){
+    try{
+      if(window.storage){ const r = await window.storage.get(MISS_KEY); return r ? JSON.parse(r.value) : []; }
+      return JSON.parse(localStorage.getItem(MISS_KEY) || "[]");
+    }catch(e){ return []; }
+  },
+  async set(v){
+    try{
+      if(window.storage){ await window.storage.set(MISS_KEY, JSON.stringify(v)); return true; }
+      localStorage.setItem(MISS_KEY, JSON.stringify(v)); return true;
+    }catch(e){ return false; }
+  }
+};
+const LOG_KEY = "eiken5:history";
+const storeLog = {
+  async get(){
+    try{
+      if(window.storage){ const r = await window.storage.get(LOG_KEY); return r ? JSON.parse(r.value) : {}; }
+      return JSON.parse(localStorage.getItem(LOG_KEY) || "{}");
+    }catch(e){ return {}; }
+  },
+  async set(v){
+    try{
+      if(window.storage){ await window.storage.set(LOG_KEY, JSON.stringify(v)); return true; }
+      localStorage.setItem(LOG_KEY, JSON.stringify(v)); return true;
+    }catch(e){ return false; }
+  }
+};
+let logs = {};           // { word: ["2026-09-15", ...] }
+function todayStr(){
+  const d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+}
+function fmtDate(iso){
+  const [ , m, d ] = iso.split("-");
+  return Number(m) + "/" + Number(d);
+}
+async function recordLook(w){
+  const key = w.toLowerCase(), t = todayStr();
+  const arr = logs[key] || (logs[key] = []);
+  if(arr[arr.length-1] === t) return;   // 同じ日は1回だけ
+  arr.push(t);
+  await storeLog.set(logs);
+}
+function logHTML(w){
+  const arr = logs[w.toLowerCase()] || [];
+  if(!arr.length) return "";
+  const cls = arr.length >= 5 ? "hot" : arr.length >= 3 ? "warm" : "";
+  return `<p class="log ${cls}">しらべた日　${arr.map(d=>`<span class="d">${fmtDate(d)}</span>`).join("")}<b>${arr.length}回</b></p>`;
+}
+
+let misses = [];
+let marks = [];
+const isMarked = w => marks.some(m=>m.w.toLowerCase()===w.toLowerCase());
+async function toggleMark(entry){
+  if(isMarked(entry.w)) marks = marks.filter(m=>m.w.toLowerCase()!==entry.w.toLowerCase());
+  else marks = [entry, ...marks];
+  await store.set(marks);
+}
+
+/* 読み上げ */
+function speak(text){
+  if(!("speechSynthesis" in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "en-US"; u.rate = 0.85;
+  speechSynthesis.speak(u);
+}
+
+/* 表示 */
+const main = document.getElementById("main");
+const q = document.getElementById("q");
+const clearBtn = document.getElementById("clear");
+let tab = "search";
+let current = null;
+const esc = s => String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function entryHTML(e){
+  return `<article class="entry">
+    <div class="head">
+      <span class="word">${esc(e.w)}</span>
+      <span class="pos">${esc(e.pos||"")}</span>
+    </div>
+    <p class="mean">${esc(e.ja)}</p>
+    ${e.ex ? `<div class="ex"><div class="en">${esc(e.ex)}</div><div class="ja">${esc(e.exja||"")}</div></div>` : ""}
+    ${logHTML(e.w)}
+    <div class="acts">
+      <button data-speak="${esc(e.ex ? e.w + ". " + e.ex : e.w)}">🔊 発音</button>
+      <button data-mark="${esc(e.w)}" class="${isMarked(e.w)?"on":""}">${isMarked(e.w)?"★ 保存中":"☆ ブックマーク"}</button>
+    </div>
+  </article>`;
+}
+function hitsHTML(list){
+  return `<ul class="hits">${list.map(e=>`<li><button data-open="${esc(e.w)}">
+    <span class="w">${esc(e.w)}</span><span class="m">${esc(e.ja)}</span></button></li>`).join("")}</ul>`;
+}
+
+/* ひらがな⇄カタカナを同一視して照合する */
+function kanaNorm(s){
+  return String(s)
+    .replace(/[\u30a1-\u30f6]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x60))
+    .replace(/[ー－]/g, "")
+    .toLowerCase();
+}
+DICT.forEach(e => e.k = kanaNorm(e.ja + " " + e.yomi));
+
+function search(term){
+  const t = term.trim().toLowerCase();
+  if(!t) return [];
+  const starts = DICT.filter(e=>e.w.toLowerCase().startsWith(t));
+  const kt = kanaNorm(term.trim());
+  const inside = DICT.filter(e=>!e.w.toLowerCase().startsWith(t) &&
+    (e.w.toLowerCase().includes(t) || e.ja.includes(term.trim()) || (kt && e.k.includes(kt))));
+  return [...starts, ...inside].slice(0, 40);
+}
+
+function render(){
+  if(tab === "mark"){
+    let h = marks.length
+      ? marks.map(entryHTML).join("")
+      : `<p class="note">まだ何も保存していません。単語を引いて「☆ ブックマーク」を押すと、ここにたまります。</p>`;
+    if(misses.length){
+      h += `<div class="secttl">辞書になかった単語</div>
+        <ul class="hits">${misses.map(m=>`<li><button data-del="${esc(m)}">
+          <span class="w">${esc(m)}</span><span class="m">タップで消す</span></button></li>`).join("")}</ul>`;
+    }
+    main.innerHTML = h;
+    return;
+  }
+  if(tab === "log"){
+    const rows = Object.entries(logs)
+      .map(([w,a])=>({w, n:a.length, last:a[a.length-1], e:INDEX[w]}))
+      .filter(r=>r.e).sort((a,b)=> b.n - a.n || (a.last < b.last ? 1 : -1));
+    main.innerHTML = rows.length
+      ? `<p class="note">引いた回数が多い順です。回数が多いほど、まだ覚えきれていない単語です。</p>
+         <ul class="hits">${rows.map(r=>`<li><button data-open="${esc(r.e.w)}">
+           <span class="w">${esc(r.e.w)}</span><span class="m">${esc(r.e.ja)}</span>
+           <span class="cnt ${r.n>=5?"hot":""}">${r.n}回</span></button></li>`).join("")}</ul>`
+      : `<p class="note">まだ記録がありません。単語を引くと、引いた日がここにたまっていきます。</p>`;
+    return;
+  }
+  if(tab === "all"){
+    const sorted = [...DICT].sort((a,b)=>a.w.toLowerCase().localeCompare(b.w.toLowerCase()));
+    main.innerHTML = hitsHTML(sorted);
+    return;
+  }
+  const term = q.value.trim();
+  if(!term){
+    main.innerHTML = current ? entryHTML(current)
+      : `<p class="note">英単語でも日本語でも引けます。辞書になかった単語はメモしておけば、あとでまとめて追加できます。</p>`;
+    return;
+  }
+  const hits = search(term);
+  const exact = INDEX[term.toLowerCase()];
+  const form = exact ? null : resolveForm(term);
+  let html = "";
+  if(exact) html += entryHTML(exact);
+  else if(form){
+    html += `<p class="note"><b>${esc(form.typed)}</b> は <b>${esc(form.entry.w)}</b> の${esc(form.label)}です。</p>`
+          + entryHTML(form.entry);
+  }
+  const shown = exact || (form && form.entry);
+  const rest = hits.filter(e=>!shown || e.w !== shown.w);
+  if(rest.length) html += (shown ? `<div class="secttl">ほかの候補</div>` : "") + hitsHTML(rest);
+  if(!shown){
+    html += `<p class="note">「${esc(term)}」はこの辞書にありません。</p>
+      <button class="askbtn" id="ask">この単語をメモしておく</button>`;
+  }
+  main.innerHTML = html;
+}
+
+async function recordMiss(term){
+  if(!term) return;
+  if(!misses.includes(term)) misses = [term, ...misses];
+  await storeMiss.set(misses);
+  const btn = document.getElementById("ask");
+  if(btn){ btn.disabled = true; btn.textContent = "メモしました"; }
+}
+
+/* イベント */
+q.addEventListener("input", ()=>{
+  clearBtn.style.display = q.value ? "block" : "none";
+  if(tab !== "search"){ setTab("search"); return; }
+  current = null; render();
+});
+q.addEventListener("keydown", e=>{
+  if(e.key === "Enter"){
+    e.preventDefault(); q.blur();
+    const term = q.value.trim();
+    render();
+  }
+});
+clearBtn.addEventListener("click", ()=>{ q.value=""; clearBtn.style.display="none"; current=null; render(); q.focus(); });
+
+main.addEventListener("click", async e=>{
+  const b = e.target.closest("button"); if(!b) return;
+  if(b.id === "ask"){ await recordMiss(q.value.trim()); return; }
+  if(b.dataset.del){
+    misses = misses.filter(m=>m !== b.dataset.del);
+    await storeMiss.set(misses); render(); return;
+  }
+  if(b.dataset.speak){ speak(b.dataset.speak); return; }
+  if(b.dataset.open){ current = INDEX[b.dataset.open.toLowerCase()]; q.value = b.dataset.open; clearBtn.style.display="block"; setTab("search"); return; }
+  if(b.dataset.mark){
+    const w = b.dataset.mark;
+    const entry = INDEX[w.toLowerCase()] || (current && current.w === w ? current : marks.find(m=>m.w===w));
+    if(entry){ await toggleMark(entry); render(); }
+  }
+});
+
+function setTab(t){
+  tab = t;
+  document.getElementById("tab-search").setAttribute("aria-selected", t==="search");
+  document.getElementById("tab-mark").setAttribute("aria-selected", t==="mark");
+  document.getElementById("tab-log").setAttribute("aria-selected", t==="log");
+  document.getElementById("tab-all").setAttribute("aria-selected", t==="all");
+  render();
+}
+document.getElementById("tab-search").onclick = ()=>setTab("search");
+document.getElementById("tab-mark").onclick   = ()=>setTab("mark");
+document.getElementById("tab-log").onclick    = ()=>setTab("log");
+document.getElementById("tab-all").onclick    = ()=>setTab("all");
+
+(async ()=>{ marks = await store.get(); misses = await storeMiss.get(); logs = await storeLog.get(); render(); })();
+</script>
+</body>
+</html>
